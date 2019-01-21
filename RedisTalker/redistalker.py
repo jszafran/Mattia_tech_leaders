@@ -32,13 +32,13 @@ class RedisTalker():
             kwargs["lval"], kwargs["val"] = "", ""
 
         msg_templates = {
-            "get": f"*2\r\n$3\r\nGET\r\n${kwargs["lkey"]}\r\n{kwargs["key"]}\r\n",
-            "set": f"*3\r\n$3\r\nSET\r\n${kwargs["lkey"]}\r\n{kwargs["key"]}\r\n${kwargs["lval"]}\r\n{kwargs["val"]}\r\n"
+            "get": f"*2\r\n$3\r\nGET\r\n${kwargs['lkey']}\r\n{kwargs['key']}\r\n",
+            "set": f"*3\r\n$3\r\nSET\r\n${kwargs['lkey']}\r\n{kwargs['key']}\r\n${kwargs['lval']}\r\n{kwargs['val']}\r\n"
         }
         self.sckt.sendall(bytes(msg_templates[msg_type], encoding="ascii"))
         
 
-    def _parse_socket_response(self):
+    def _parse_socket_response(self, rsp):
         pass
 
 

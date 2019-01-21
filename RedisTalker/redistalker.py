@@ -3,10 +3,6 @@ Basic client for Redis implementing GET & SET methods
 
 TODO:
 1. Implement Redis responses parsing.
-2. Apply some refactoring:
-    *implement generic method for pushing data to socket
-     with dict containg type of message (get/set) and appropriate string template
-
 """
 
 import socket
@@ -30,15 +26,31 @@ class RedisTalker():
         except:
             print("Connection to Redis failed.")
     
+
+    def _send_data_to_socket(self, msg_type, **kwargs):
+        if not all(k in kwargs for k in ("lval","val")):
+            kwargs["lval"], kwargs["val"] = "", ""
+
+        msg_templates = {
+            "get": f"*2\r\n$3\r\nGET\r\n${kwargs["lkey"]}\r\n{kwargs["key"]}\r\n",
+            "set": f"*3\r\n$3\r\nSET\r\n${kwargs["lkey"]}\r\n{kwargs["key"]}\r\n${kwargs["lval"]}\r\n{kwargs["val"]}\r\n"
+        }
+        self.sckt.sendall(bytes(msg_templates[msg_type], encoding="ascii"))
         
+
+    def _parse_socket_response(self):
+        pass
+
+
     def set(self, key, val):
         if not self.is_connected:
             print("There's no connection established!")
             return
 
-        lkey, lval = len(key), len(val)
-        set_template = f"*3\r\n$3\r\nSET\r\n${lkey}\r\n{key}\r\n${lval}\r\n{val}\r\n"
-        self.sckt.sendall(bytes(set_template, encoding="ascii"))
+        self._send_data_to_socket("set", lkey=len(key),
+                                         key=key,
+                                         lval=len(val),
+                                         val=val)
         ans = self.sckt.recv(1024)
         print(f"Redis response: {ans}")
 
@@ -48,9 +60,8 @@ class RedisTalker():
             print("There's no connection established!")
             return 
         
-        lkey = len(key)
-        get_template = f"*2\r\n$3\r\nGET\r\n${lkey}\r\n{key}\r\n"
-        self.sckt.sendall(bytes(get_template, encoding="ascii"))
+        self._send_data_to_socket("get", lkey=len(key),
+                                         key=key)
         ans = self.sckt.recv(1024)
         print(f"Redis response: {ans}")
 
@@ -59,5 +70,5 @@ class RedisTalker():
 # on my local machine
 r = RedisTalker()
 r.connect()
-r.set("first_name", "kuba")
+r.set("first_name", "kubaaaa")
 r.get("first_name")

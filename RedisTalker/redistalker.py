@@ -1,21 +1,15 @@
 """
 Basic client for Redis implementing GET & SET methods
-
-TODO:
-1. Improve the way Redis responses are parsed
 """
 
 import socket
 
 class RedisTalker():
-
-
     def __init__(self, host="localhost", port=6379):
         self.host = host
         self.port = port
         self.is_connected = False
         self.sckt = None
-
 
     def connect(self):
         try:
@@ -26,7 +20,6 @@ class RedisTalker():
         except:
             print("Connection to Redis failed.")
     
-
     def _send_data_to_socket(self, msg_type, **kwargs):
         if not all(k in kwargs for k in ("lval","val")):
             kwargs["lval"], kwargs["val"] = "", ""
@@ -37,11 +30,9 @@ class RedisTalker():
         }
         self.sckt.sendall(bytes(msg_templates[msg_type], encoding="ascii"))
         
-
     def _parse_socket_response(self, rsp):
         rsp_parsed = rsp.split(bytes('\r\n', encoding="ascii"))
         return rsp_parsed
-
 
     def set(self, key, val):
         if not self.is_connected:
@@ -55,7 +46,6 @@ class RedisTalker():
         ans = self._parse_socket_response(self.sckt.recv(1024))
         print(f"Redis response: {ans[0]}")
 
-
     def get(self, key):
         if not self.is_connected:
             print("There's no connection established!")
@@ -65,13 +55,3 @@ class RedisTalker():
                                          key=key)
         ans = self._parse_socket_response(self.sckt.recv(1024))
         print(f"Redis response: {ans[1]}")
-
-
-# just to check if this is working
-# on my local machine
-r = RedisTalker()
-r.connect()
-r.set("first_name", "Jakub")
-r.set("last_name", "Szafran")
-r.get("first_name")
-r.get("last_name")
